@@ -1,0 +1,62 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+A template element that repeat `n` times its content.
+
+Example:
+
+    <template is"dom-repeat-n" count="3">
+      <div>I am div {{index}}</div>
+    </template>
+
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="dom-repeat-n">
+  <template>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'dom-repeat-n',
+      extend: 'template',
+
+      properties: {
+        /**
+         * `count` specifies the number of times to repeat the template content.
+         */
+        count: Number,
+      },
+
+      // Element Lifecycle
+
+      ready: function() {
+        // `ready` is called after all elements have been configured, but
+        // propagates bottom-up. This element's children are ready, but parents
+        // are not.
+        //
+        // This is the point where you should make modifications to the DOM (when
+        // necessary), or kick off any processes the element wants to perform.
+      },
+
+      attached: function() {
+        // `attached` fires once the element and its parents have been inserted
+        // into a document.
+        //
+        // This is a good place to perform any work related to your element's
+        // visual state or active behavior (measuring sizes, beginning animations,
+        // loading resources, etc).
+      },
+
+      detached: function() {
+        // The analog to `attached`, `detached` fires when the element has been
+        // removed from a document.
+        //
+        // Use this to clean up anything you did in `attached`.
+      },
+
+      // Element Behavior
+
+    });
+  </script>
+</dom-module>
