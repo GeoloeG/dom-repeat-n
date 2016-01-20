@@ -12,51 +12,83 @@ Example:
 @demo demo/index.html
 @hero hero.svg
 -->
-<dom-module id="dom-repeat-n">
-  <template>
-  </template>
+<script>
+  Polymer({
+    is: 'dom-repeat-n',
+    extends: 'template',
 
-  <script>
-    Polymer({
-      is: 'dom-repeat-n',
-      extend: 'template',
+    /**
+     * Fired whenever DOM is added or removed by this template (by
+     * default, rendering occurs lazily).  To force immediate rendering, call
+     * `render`.
+     *
+     * @event dom-change
+     */
 
-      properties: {
-        /**
-         * `count` specifies the number of times to repeat the template content.
-         */
-        count: Number,
+    properties: {
+      /**
+       * `count` specifies the number of times to repeat the template content.
+       */
+      count: {
+        type: Number,
+        value: 0
       },
 
-      // Element Lifecycle
-
-      ready: function() {
-        // `ready` is called after all elements have been configured, but
-        // propagates bottom-up. This element's children are ready, but parents
-        // are not.
-        //
-        // This is the point where you should make modifications to the DOM (when
-        // necessary), or kick off any processes the element wants to perform.
+      /**
+       * The name of the variable to add to the binding scope with the index
+       * for the inst.  If `sort` is provided, the index will reflect the
+       * sorted order (rather than the original array order).
+       */
+      indexAs: {
+        type: String,
+        value: 'index'
       },
 
-      attached: function() {
-        // `attached` fires once the element and its parents have been inserted
-        // into a document.
-        //
-        // This is a good place to perform any work related to your element's
-        // visual state or active behavior (measuring sizes, beginning animations,
-        // loading resources, etc).
-      },
+      /**
+       * A boolean indicating whether the element are stamped with an 
+       * increasing index.
+       */
+      ascending: {
+        type: Boolean,
+        value: true
+      }
 
-      detached: function() {
-        // The analog to `attached`, `detached` fires when the element has been
-        // removed from a document.
-        //
-        // Use this to clean up anything you did in `attached`.
-      },
+    },
+    behaviors: [
+      Polymer.Templatizer
+    ],
+    _queueRender: function() {
+      this._debounceTemplate(this._render);
+    },
 
-      // Element Behavior
+    // Element Lifecycle
 
-    });
-  </script>
-</dom-module>
+    ready: function() {
+      // `ready` is called after all elements have been configured, but
+      // propagates bottom-up. This element's children are ready, but parents
+      // are not.
+      //
+      // This is the point where you should make modifications to the DOM (when
+      // necessary), or kick off any processes the element wants to perform.
+    },
+
+    attached: function() {
+      // `attached` fires once the element and its parents have been inserted
+      // into a document.
+      //
+      // This is a good place to perform any work related to your element's
+      // visual state or active behavior (measuring sizes, beginning animations,
+      // loading resources, etc).
+    },
+
+    detached: function() {
+      // The analog to `attached`, `detached` fires when the element has been
+      // removed from a document.
+      //
+      // Use this to clean up anything you did in `attached`.
+    },
+
+    // Element Behavior
+
+  });
+</script>
