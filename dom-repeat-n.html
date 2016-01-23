@@ -16,6 +16,9 @@ Example:
   Polymer({
     is: 'dom-repeat-n',
     extends: 'template',
+    // The following specifies that the element stamp directly no content,
+    // i.e. does not have a <template> section declared
+    _template: null,
 
     /**
      * Fired whenever DOM is added or removed by this template (by
