@@ -40,7 +40,7 @@ Example:
 
       /**
        * The name of the variable to add to the binding scope with the index
-       * for the inst.  If `sort` is provided, the index will reflect the
+       * for the inst.  If `order` is provided, the index will reflect the
        * sorted order (rather than the original array order).
        */
       indexAs: {
@@ -49,35 +49,30 @@ Example:
       },
 
       /**
-       * A boolean indicating whether the element are stamped with an 
-       * increasing index.
+       * A string indicating the ordering 'ascending' or 'descending'.
        */
-      ascending: {
-        type: Boolean,
-        value: true
+      order: {
+        type: String,
+        value: 'ascending',
+        observer: '_orderChanged'
       }
 
     },
+
     behaviors: [
       Polymer.Templatizer
     ],
-
-    // TODO PG: is needed?
-    _queueRender: function() {
-      this._debounceTemplate(this._render);
-    },
 
     // Element Lifecycle
 
     created: function() {
       this._instances = [];
+      this._pool = [];
     },
 
     ready: function() {
       // Template instance props that should be excluded from forwarding
-      this._instanceProps = {
-        __key__: true
-      };
+      this._instanceProps = {};
       this._instanceProps[this.indexAs] = true;
       // Templatizing (generating the instance constructor) needs to wait
       // until ready, since won't have its template content handed back to
@@ -85,6 +80,7 @@ Example:
       if (!this.ctor) {
         this.templatize(this);
       }
+      console.log("ready!");
     },
 
     attached: function() {
@@ -103,15 +99,26 @@ Example:
     // Element Behavior
 
     _countChanged: function(newCount, oldCount) {
-      // TODO PG: check what is to be done here!
+      oldCount = oldCount || 0;
+      console.log("_countChanged: " + oldCount + " -> " + newCount);
+      this._debounceTemplate(this._render);
+    },
 
-      // Do the diff and see if we have to add or remove instances
-
-      // Probably needed to keep track of indexes
-      this._keySplices = [];
-      this._indexSplices = [];
-
-      // Finally call:
+    _orderChanged: function(order, oldOrder) {
+      console.log('_orderChanged');
+      switch(order) {
+        case 'ascending':
+          console.log('Ascending');
+          this._order = 1;
+          break;
+        case 'descending':
+          console.log('Descending');
+          this._order = -1;
+          break;
+        default:
+          console.warn('Invalid order value (' + order + ') for dom-repeat-n.');
+          this._order = 1;
+      }
       this._debounceTemplate(this._render);
     },
 
@@ -124,106 +131,37 @@ Example:
      */
     render: function() {
       // Queue this repeater, then flush all in order
-      this._needFullRefresh = true;
       this._debounceTemplate(this._render);
       this._flushTemplates();
     },
 
     _render: function() {
-      // Choose rendering path: full vs. incremental using splices
-      if (this._needFullRefresh) {
-        // Full refresh when items, sort, or filter change, or when render() called
-        this._applyFullRefresh();
-        this._needFullRefresh = false;
-      } else if (this._keySplices.length) {
-        // Incremental refresh when splices were queued
-        if (this._sortFn) {
-          this._applySplicesUserSort(this._keySplices);
-        } else {
-          if (this._filterFn) {
-            // TODK(kschaaf): Filtering using array sort takes slow path
-            this._applyFullRefresh();
-          } else {
-            this._applySplicesArrayOrder(this._indexSplices);
-          }
-        }
-      } else {
-        // Otherwise only limit changed; no change to instances, just need to
-        // upgrade more placeholders to instances
-      }
-      this._keySplices = [];
-      this._indexSplices = [];
-      // Update final _keyToInstIdx and instance indices, and
-      // upgrade/downgrade placeholders
-      var keyToIdx = this._keyToInstIdx = {};
-      for (var i=this._instances.length-1; i>=0; i--) {
-        var inst = this._instances[i];
-        if (inst.isPlaceholder) {
-          inst = this._insertInstance(i, inst.__key__);
-        } else if (!inst.isPlaceholder && i>=this._limit) {
-          inst = this._downgradeInstance(i, inst.__key__);
-        }
-        keyToIdx[inst.__key__] = i;
-        if (!inst.isPlaceholder) {
-          inst.__setProperty(this.indexAs, i, true);
-        }
-      }
-      // Reset the pool
-      // TODO(kschaaf): Reuse pool across turns and nested templates
-      // Requires updating parentProps and dealing with the fact that path
-      // notifications won't reach instances sitting in the pool, which
-      // could result in out-of-sync instances since simply re-setting
-      // `item` may not be sufficient if the pooled instance happens to be
-      // the same item.
-      this._pool.length = 0;
-      // Notify users
-      this.fire('dom-change');
-      // Check to see if we need to render more items
-      this._tryRenderChunk();
-    },
-
-    // Render method 1: full refesh
-    // ----
-    _applyFullRefresh: function() {
-      // Start with unordered keys for user sort,
-      // or get them in array order for array order
+      console.log("_render");
       var i;
-      var keys;
-      if (this._sortFn) {
-        keys = c ? c.getKeys() : [];
-      } else {
-        keys = [];
-        var items = this.items;
-        if (items) {
-          for (i=0; i<items.length; i++) {
-            keys.push(c.getKey(items[i]));
-          }
-        }
-      }
-      // TODO PG: sort ascending or descending
-      if (this._sortFn) {
-        keys.sort(function(a, b) {
-          return self._sortFn(c.getItem(a), c.getItem(b));
-        });
-      }
-      // Generate instances and assign items and keys
-      for (i=0; i<keys.length; i++) {
-        var key = keys[i];
+      // Generate missing instances if count increased
+      for (i=0; i<this.count; i++) {
         var inst = this._instances[i];
-        if (inst) {
-          inst.__key__ = key;
-          if (!inst.isPlaceholder && i < this._limit) {
-            inst.__setProperty(this.as, c.getItem(key), true);
-          }
-        } else if (i < this._limit) {
-          this._insertInstance(i, key);
+        if (!inst) {
+          inst = this._insertInstance(i);
+        }
+        if (this._order > 0) {
+          inst.__setProperty(this.indexAs, i, true);
         } else {
-          this._insertPlaceholder(i, key);
+          inst.__setProperty(this.indexAs, this.count-i-1, true);
         }
       }
       // Remove any extra instances from previous state
-      for (var j=this._instances.length-1; j>=i; j--) {
-        this._detachAndRemoveInstance(j);
+      for (i=this.count; i<this._instances.length; i++) {
+        this._detachAndRemoveInstance(i);
+      }
+      // Notify users
+      this.fire('dom-change');
+    },
+
+    _attachInstance: function(idx, parent) {
+      var inst = this._instances[idx];
+      if (!inst.isPlaceholder) {
+        parent.insertBefore(inst.root, this);
       }
     },
 
@@ -238,13 +176,6 @@ Example:
       }
     },
 
-    _attachInstance: function(idx, parent) {
-      var inst = this._instances[idx];
-      if (!inst.isPlaceholder) {
-        parent.insertBefore(inst.root, this);
-      }
-    },
-
     _detachAndRemoveInstance: function(idx) {
       var inst = this._detachInstance(idx);
       if (inst) {
@@ -253,49 +184,30 @@ Example:
       this._instances.splice(idx, 1);
     },
 
-    _insertPlaceholder: function(idx, key) {
+    _insertPlaceholder: function(idx) {
       this._instances.splice(idx, 0, {
-        isPlaceholder: true,
-        __key__: key
+        isPlaceholder: true
       });
     },
 
-    _stampInstance: function(idx, key) {
-      var model = {
-        __key__: key
-      };
-      model[this.as] = this.collection.getItem(key);
+    _stampInstance: function(idx) {
+      console.log("_stampInstance: " + idx);
+      var model = {};
       model[this.indexAs] = idx;
       return this.stamp(model);
     },
 
-    _insertInstance: function(idx, key) {
+    _insertInstance: function(idx) {
+      console.log("_insertInstance: " + idx);
       var inst = this._pool.pop();
-      if (inst) {
-        // TODO(kschaaf): If the pool is shared across turns, parentProps
-        // need to be re-set to reused instances in addition to item/key
-        inst.__setProperty(this.as, this.collection.getItem(key), true);
-        inst.__setProperty('__key__', key, true);
-      } else {
-        inst = this._stampInstance(idx, key);
+      if (!inst) {
+        inst = this._stampInstance(idx);
+        this._instances.push(inst);
       }
       var beforeRow = this._instances[idx + 1];
       var beforeNode = beforeRow && !beforeRow.isPlaceholder ? beforeRow._children[0] : this;
       var parentNode = Polymer.dom(this).parentNode;
       Polymer.dom(parentNode).insertBefore(inst.root, beforeNode);
-      this._instances[idx] = inst;
-      return inst;
-    },
-
-    _downgradeInstance: function(idx, key) {
-      var inst = this._detachInstance(idx);
-      if (inst) {
-        this._pool.push(inst);
-      }
-      inst = {
-        isPlaceholder: true,
-        __key__: key
-      };
       this._instances[idx] = inst;
       return inst;
     },
@@ -310,30 +222,14 @@ Example:
     // Called as a side effect of a template item change, responsible
     // for notifying items.<key-for-inst> change up to host
     _forwardInstanceProp: function(inst, prop, value) {
-      if (prop == this.as) {
-        var idx;
-        if (this._sortFn || this._filterFn) {
-          // Known slow lookup: when sorted/filtered, there is no way to
-          // efficiently memoize the array index and keep it in sync with array
-          // mutations, so we need to look the item up in the array
-          // This can happen e.g. when array of strings is repeated into inputs
-          idx = this.items.indexOf(this.collection.getItem(inst.__key__));
-        } else {
-          // When there is no sort/filter, the view index is the array index
-          idx = inst[this.indexAs];
-        }
-        this.set('items.' + idx, value);
-      }
+      // TODO PG: should be removed? Nothing to do...
     },
 
     // Implements extension point from Templatizer
     // Called as a side effect of a template instance path change, responsible
     // for notifying items.<key-for-inst>.<path> change up to host
     _forwardInstancePath: function(inst, path, value) {
-      if (path.indexOf(this.as + '.') === 0) {
-        this._notifyPath('items.' + inst.__key__ + '.' +
-          path.slice(this.as.length + 1), value);
-      }
+      // TODO PG: should be removed? Nothing to do...
     },
 
     // Implements extension point from Templatizer mixin
@@ -359,53 +255,5 @@ Example:
         }
       }
     },
-
-    // Called as a side effect of a host items.<key>.<path> path change,
-    // responsible for notifying item.<path> changes to inst for key
-    _forwardItemPath: function(path, value) {
-      if (this._keyToInstIdx) {
-        var dot = path.indexOf('.');
-        var key = path.substring(0, dot < 0 ? path.length : dot);
-        var idx = this._keyToInstIdx[key];
-        var inst = this._instances[idx];
-        if (inst && !inst.isPlaceholder) {
-          if (dot >= 0) {
-            path = this.as + '.' + path.substring(dot+1);
-            inst._notifyPath(path, value, true);
-          } else {
-            inst.__setProperty(this.as, value, true);
-          }
-        }
-      }
-    },
-
-    /**
-     * Returns the `Polymer.Collection` key associated with a given
-     * element stamped by this `dom-repeat`.
-     *
-     * @method keyForElement
-     * @param {HTMLElement} el Element for which to return the key.
-     * @return {any} Key associated with the element.
-     */
-    keyForElement: function(el) {
-      var instance = this.modelForElement(el);
-      return instance && instance.__key__;
-    },
-
-    /**
-     * Returns the inst index for a given element stamped by this `dom-repeat`.
-     * If `sort` is provided, the index will reflect the sorted order (rather
-     * than the original array order).
-     *
-     * @method indexForElement
-     * @param {HTMLElement} el Element for which to return the index.
-     * @return {any} Row index associated with the element (note this may
-     *   not correspond to the array index if a user `sort` is applied).
-     */
-    indexForElement: function(el) {
-      var instance = this.modelForElement(el);
-      return instance && instance[this.indexAs];
-    }
-
   });
 </script>
