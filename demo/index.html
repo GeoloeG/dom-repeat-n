@@ -17,28 +17,36 @@
   </head>
   <body>
     <template id="t" is="dom-bind">
-      <h2>Dom-repeat</h2>
-      <template is="dom-repeat" items='["1","2"]'>
-        <div>I am div {{index}}</div>
-      </template>
+      <h2>Dom-repeat (default)</h2>
       <template is="dom-repeat-n" count="3">
         <div>I am div {{index}}</div>
       </template>
 
-      <h2>Dom-repeat (descending)</h2>
+      <h2>Dom-repeat (order=descending)</h2>
       <template is="dom-repeat-n" count="3" order="descending">
         <div>I am div {{index}}</div>
       </template>
 
+      <h2>Dom-repeat (start=3)</h2>
+      <template is="dom-repeat-n" count="3" start="3">
+        <div>I am div {{index}}</div>
+      </template>
+
+      <h2>Dom-repeat (index-as="my_index")</h2>
+      <template is="dom-repeat-n" count="3" index-as="my_index">
+        <div>I am div {{my_index}}</div>
+      </template>
+
       <h2>Dom-repeat (dynamic)</h2>
-      <paper-input id="countInput" type="number" value="{{count}}"></paper-input>
+      <paper-input type="number" value="{{count}}"></paper-input>
+      <paper-input type="number" value="{{start}}"></paper-input>
       <paper-dropdown-menu label="Ordering" value="{{order}}">
         <paper-menu class="dropdown-content">
           <paper-item>ascending</paper-item>
           <paper-item>descending</paper-item>
         </paper-menu>
       </paper-dropdown-menu>
-      <template is="dom-repeat-n" count="{{count}}" order="{{order}}">
+      <template is="dom-repeat-n" count="{{count}}" start="{{start}}" order="{{order}}">
         <div>I am div {{index}}</div>
       </template>
     </template>

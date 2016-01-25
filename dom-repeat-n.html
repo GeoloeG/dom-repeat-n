@@ -5,7 +5,7 @@ A template element that repeat `n` times its content.
 
 Example:
 
-    <template is"dom-repeat-n" count="3">
+    <template is="dom-repeat-n" count="3">
       <div>I am div {{index}}</div>
     </template>
 
@@ -34,8 +34,16 @@ Example:
        */
       count: {
         type: Number,
-        value: 0,
+        value: 0, 
         observer: '_countChanged'
+      },
+
+      /**
+       * `start` specifies the value of the first index and default to 0.
+       */
+      start: {
+        type: Number,
+        value: 0
       },
 
       /**
@@ -53,8 +61,7 @@ Example:
        */
       order: {
         type: String,
-        value: 'ascending',
-        observer: '_orderChanged'
+        value: 'ascending'
       }
 
     },
@@ -63,11 +70,16 @@ Example:
       Polymer.Templatizer
     ],
 
+    observers: [
+      '_indexesChanged(start, order)'
+    ],
+
     // Element Lifecycle
 
     created: function() {
       this._instances = [];
       this._pool = [];
+      this._order = 1;
     },
 
     ready: function() {
@@ -99,81 +111,71 @@ Example:
     // Element Behavior
 
     _countChanged: function(newCount, oldCount) {
-      oldCount = oldCount || 0;
-      console.log("_countChanged: " + oldCount + " -> " + newCount);
-      this._debounceTemplate(this._render);
-    },
-
-    _orderChanged: function(order, oldOrder) {
-      console.log('_orderChanged');
-      switch(order) {
-        case 'ascending':
-          console.log('Ascending');
-          this._order = 1;
-          break;
-        case 'descending':
-          console.log('Descending');
-          this._order = -1;
-          break;
-        default:
-          console.warn('Invalid order value (' + order + ') for dom-repeat-n.');
-          this._order = 1;
+      if (newCount < 0) {
+        console.error("dom-repeat-n: count cannot be negative");
+        return;
       }
-      this._debounceTemplate(this._render);
-    },
-
-    /**
-     * Forces the element to render its content. Normally rendering is
-     * asynchronous to a provoking change. This is done for efficiency so
-     * that multiple changes trigger only a single render. The render method
-     * should be called if, for example, template rendering is required to
-     * validate application state.
-     */
-    render: function() {
-      // Queue this repeater, then flush all in order
-      this._debounceTemplate(this._render);
-      this._flushTemplates();
-    },
-
-    _render: function() {
-      console.log("_render");
-      var i;
-      // Generate missing instances if count increased
-      for (i=0; i<this.count; i++) {
-        var inst = this._instances[i];
-        if (!inst) {
-          inst = this._insertInstance(i);
+      this.debounce('update-count', function() {
+        console.log("_countChanged: " + newCount);
+        console.log("_countChanged: " + oldCount);
+        oldCount = oldCount || 0;
+        var i;
+        // Generate possible missing instances if count increased
+        for (i=oldCount; i<newCount; i++) {
+          var inst = this._instances[i];
+          if (!inst) {
+            inst = this._insertInstance(i);
+          }
         }
-        if (this._order > 0) {
-          inst.__setProperty(this.indexAs, i, true);
-        } else {
-          inst.__setProperty(this.indexAs, this.count-i-1, true);
+        // Remove any extra instances from previous state
+        var limit = this._instances.length;
+        for (i=newCount; i<limit; i++) {
+          console.log('_countChanged: removing ' + i);
+          this._detachAndRemoveInstance(i);
+        }        
+      });
+    },
+
+    _indexesChanged: function(start, order) {
+      this.debounce('update-index', function() {
+        console.log("_indexesChanged: " + start);
+        console.log("_indexesChanged: " + order);
+        switch(order) {
+          case 'ascending':
+            console.log('Ascending');
+            this._order = 1;
+            break;
+          case 'descending':
+            console.log('Descending');
+            this._order = -1;
+            break;
+          default:
+            console.warn('Invalid order value (' + order + ') for dom-repeat-n.');
+            this._order = 1;
         }
-      }
-      // Remove any extra instances from previous state
-      for (i=this.count; i<this._instances.length; i++) {
-        this._detachAndRemoveInstance(i);
-      }
-      // Notify users
-      this.fire('dom-change');
+        for (var i=0; i<this.count; i++) {
+          var inst = this._instances[i];
+          if (this._order > 0) {
+            inst.__setProperty(this.indexAs, i+this.start, true);
+          } else {
+            inst.__setProperty(this.indexAs, this.count-i-1+this.start, true);
+          }
+        }
+      });
     },
 
     _attachInstance: function(idx, parent) {
       var inst = this._instances[idx];
-      if (!inst.isPlaceholder) {
-        parent.insertBefore(inst.root, this);
-      }
+      parent.insertBefore(inst.root, this);
     },
 
     _detachInstance: function(idx) {
       var inst = this._instances[idx];
-      if (!inst.isPlaceholder) {
-        for (var i=0; i<inst._children.length; i++) {
-          var el = inst._children[i];
-          Polymer.dom(inst.root).appendChild(el);
-        }
-        return inst;
+      for (var i=0; i<inst._children.length; i++) {
+        var el = inst._children[i];
+        Polymer.dom(inst.root).appendChild(el);
       }
+      return inst;        
     },
 
     _detachAndRemoveInstance: function(idx) {
@@ -182,12 +184,6 @@ Example:
         this._pool.push(inst);
       }
       this._instances.splice(idx, 1);
-    },
-
-    _insertPlaceholder: function(idx) {
-      this._instances.splice(idx, 0, {
-        isPlaceholder: true
-      });
     },
 
     _stampInstance: function(idx) {
@@ -202,13 +198,18 @@ Example:
       var inst = this._pool.pop();
       if (!inst) {
         inst = this._stampInstance(idx);
+        if (this._order > 0) {
+          inst.__setProperty(this.indexAs, idx, true);
+        } else {
+          inst.__setProperty(this.indexAs, this.count-idx-1, true);
+        }
         this._instances.push(inst);
       }
       var beforeRow = this._instances[idx + 1];
-      var beforeNode = beforeRow && !beforeRow.isPlaceholder ? beforeRow._children[0] : this;
+      var beforeNode = (beforeRow && !beforeRow.isPlaceholder) ? beforeRow._children[0] : this;
       var parentNode = Polymer.dom(this).parentNode;
       Polymer.dom(parentNode).insertBefore(inst.root, beforeNode);
-      this._instances[idx] = inst;
+      //this._instances[idx] = inst;
       return inst;
     },
 
@@ -217,43 +218,6 @@ Example:
       for (var i=0; i<this._instances.length; i++) {
         this._instances[i]._showHideChildren(hidden);
       }
-    },
-
-    // Called as a side effect of a template item change, responsible
-    // for notifying items.<key-for-inst> change up to host
-    _forwardInstanceProp: function(inst, prop, value) {
-      // TODO PG: should be removed? Nothing to do...
-    },
-
-    // Implements extension point from Templatizer
-    // Called as a side effect of a template instance path change, responsible
-    // for notifying items.<key-for-inst>.<path> change up to host
-    _forwardInstancePath: function(inst, path, value) {
-      // TODO PG: should be removed? Nothing to do...
-    },
-
-    // Implements extension point from Templatizer mixin
-    // Called as side-effect of a host property change, responsible for
-    // notifying parent path change on each inst
-    _forwardParentProp: function(prop, value) {
-      var i$ = this._instances;
-      for (var i=0, inst; (i<i$.length) && (inst=i$[i]); i++) {
-        if (!inst.isPlaceholder) {
-          inst.__setProperty(prop, value, true);
-        }
-      }
-    },
-
-    // Implements extension point from Templatizer
-    // Called as side-effect of a host path change, responsible for
-    // notifying parent path change on each inst
-    _forwardParentPath: function(path, value) {
-      var i$ = this._instances;
-      for (var i=0, inst; (i<i$.length) && (inst=i$[i]); i++) {
-        if (!inst.isPlaceholder) {
-          inst._notifyPath(path, value, true);
-        }
-      }
-    },
+    }
   });
 </script>
