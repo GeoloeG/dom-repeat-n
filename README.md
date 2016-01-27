@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/MeTaNoV/dom-repeat-n.svg?branch=master)](https://travis-ci.org/MeTaNoV/iron-swipeable-pages)
 [![Dependency Status](https://gemnasium.com/MeTaNoV/dom-repeat-n.svg)](https://gemnasium.com/MeTaNoV/iron-swipeable-pages)
 
-[WIP] A template element that repeat `n` times its content.
+A template element that repeat `n` times its content.
 
 ## Demo
 
