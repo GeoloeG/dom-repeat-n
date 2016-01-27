@@ -43,7 +43,8 @@ Example:
        */
       start: {
         type: Number,
-        value: 0
+        value: 0,
+        observer: '_startChanged'
       },
 
       /**
@@ -61,17 +62,14 @@ Example:
        */
       order: {
         type: String,
-        value: 'ascending'
+        value: 'ascending',
+        observer: '_orderChanged'
       }
 
     },
 
     behaviors: [
       Polymer.Templatizer
-    ],
-
-    observers: [
-      '_indexesChanged(start, order)'
     ],
 
     // Element Lifecycle
@@ -92,7 +90,6 @@ Example:
       if (!this.ctor) {
         this.templatize(this);
       }
-      console.log("ready!");
     },
 
     attached: function() {
@@ -111,17 +108,21 @@ Example:
     // Element Behavior
 
     _countChanged: function(newCount, oldCount) {
+      if (typeof(newCount) !== "number") {
+        this.count = oldCount;
+        console.error("dom-repeat-n: count should be a number");
+        return;
+      }
       if (newCount < 0) {
+        this.count = oldCount;
         console.error("dom-repeat-n: count cannot be negative");
         return;
       }
-      this.debounce('update-count', function() {
-        console.log("_countChanged: " + newCount);
-        console.log("_countChanged: " + oldCount);
-        oldCount = oldCount || 0;
+      // we use async to enable ready to be called before this code
+      this.async(function() {
         var i;
         // Generate possible missing instances if count increased
-        for (i=oldCount; i<newCount; i++) {
+        for (i=0; i<newCount; i++) {
           var inst = this._instances[i];
           if (!inst) {
             inst = this._insertInstance(i);
@@ -130,38 +131,47 @@ Example:
         // Remove any extra instances from previous state
         var limit = this._instances.length;
         for (i=newCount; i<limit; i++) {
-          console.log('_countChanged: removing ' + i);
           this._detachAndRemoveInstance(i);
         }        
+        this._debounceTemplate(this._render);
+        this.fire('dom-change');
       });
     },
 
-    _indexesChanged: function(start, order) {
-      this.debounce('update-index', function() {
-        console.log("_indexesChanged: " + start);
-        console.log("_indexesChanged: " + order);
-        switch(order) {
-          case 'ascending':
-            console.log('Ascending');
-            this._order = 1;
-            break;
-          case 'descending':
-            console.log('Descending');
-            this._order = -1;
-            break;
-          default:
-            console.warn('Invalid order value (' + order + ') for dom-repeat-n.');
-            this._order = 1;
+    _startChanged: function(newStart, oldStart) {
+      if (typeof(newStart) !== "number") {
+        this.start = oldStart;
+        console.error("dom-repeat-n: start should be a number");
+        return;
+      }
+      this._debounceTemplate(this._render);
+    },
+
+    _orderChanged: function(newOrder, oldOrder) {
+      switch(newOrder) {
+        case 'ascending':
+          this._order = 1;
+          break;
+        case 'descending':
+          this._order = -1;
+          break;
+        default:
+          console.error('dom-repeat-n: invalid order value (' + newOrder + ')');
+          this.order = oldOrder;
+          return;
+      }
+      this._debounceTemplate(this._render);
+    },
+
+    _render: function() {
+      for (var i=0; i<this.count; i++) {
+        var inst = this._instances[i];
+        if (this._order > 0) {
+          inst.__setProperty(this.indexAs, i+this.start, true);
+        } else {
+          inst.__setProperty(this.indexAs, this.count-i-1+this.start, true);
         }
-        for (var i=0; i<this.count; i++) {
-          var inst = this._instances[i];
-          if (this._order > 0) {
-            inst.__setProperty(this.indexAs, i+this.start, true);
-          } else {
-            inst.__setProperty(this.indexAs, this.count-i-1+this.start, true);
-          }
-        }
-      });
+      }
     },
 
     _attachInstance: function(idx, parent) {
@@ -187,29 +197,21 @@ Example:
     },
 
     _stampInstance: function(idx) {
-      console.log("_stampInstance: " + idx);
       var model = {};
       model[this.indexAs] = idx;
       return this.stamp(model);
     },
 
     _insertInstance: function(idx) {
-      console.log("_insertInstance: " + idx);
       var inst = this._pool.pop();
       if (!inst) {
         inst = this._stampInstance(idx);
-        if (this._order > 0) {
-          inst.__setProperty(this.indexAs, idx, true);
-        } else {
-          inst.__setProperty(this.indexAs, this.count-idx-1, true);
-        }
-        this._instances.push(inst);
       }
       var beforeRow = this._instances[idx + 1];
       var beforeNode = (beforeRow && !beforeRow.isPlaceholder) ? beforeRow._children[0] : this;
       var parentNode = Polymer.dom(this).parentNode;
       Polymer.dom(parentNode).insertBefore(inst.root, beforeNode);
-      //this._instances[idx] = inst;
+      this._instances.push(inst);
       return inst;
     },
 

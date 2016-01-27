@@ -34,6 +34,10 @@ And then use it:
 
 See the [Documentation](https://metanov.github.io/dom-repeat-n/) for more options.
 
+## Discussing
+
+If you have any questions, you can find me on the [Polymer Slack Channel](https://polymer.slack.com/), or just raise an Issue.
+
 ## Contributing
 
 1. Fork it!
