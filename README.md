@@ -27,7 +27,7 @@ Import Custom Element:
 And then use it:
 
 ```html
-<template is"dom-repeat-n" count="3">
+<template is="dom-repeat-n" count="3">
   <div>I am div {{index}}</div>
 </template>
 ```
