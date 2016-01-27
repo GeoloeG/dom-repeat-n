@@ -1,6 +1,6 @@
 {
   "name": "dom-repeat-n",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "authors": [
     "Pascal Gula aka MeTaNoV <pascal.gula@gmail.com>"
   ],
@@ -42,9 +42,6 @@
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0",
     "paper-input": "PolymerElements/paper-input#^1.0.0",
-    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.0.0",
-    "paper-menu": "PolymerElements/paper-menu#^1.0.0",
-    "paper-item": "PolymerElements/paper-item#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
     "web-component-tester": "^4.0.0"
   }

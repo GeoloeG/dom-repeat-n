@@ -11,9 +11,6 @@
 
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../paper-input/paper-input.html">
-    <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
-    <link rel="import" href="../../paper-menu/paper-menu.html">
-    <link rel="import" href="../../paper-item/paper-item.html">
 
     <link rel="import" href="../dom-repeat-n.html">
 
@@ -37,13 +34,13 @@
           <div>I am div {{index}}</div>
         </template>
 
-        <h2>Dom-repeat (order=descending)</h2>
-        <template is="dom-repeat-n" count="3" order="descending">
+        <h2>Dom-repeat (start=3)</h2>
+        <template is="dom-repeat-n" count="3" start="3">
           <div>I am div {{index}}</div>
         </template>
 
-        <h2>Dom-repeat (start=3)</h2>
-        <template is="dom-repeat-n" count="3" start="3">
+        <h2>Dom-repeat (increment=3)</h2>
+        <template is="dom-repeat-n" count="3" increment="3">
           <div>I am div {{index}}</div>
         </template>
 
@@ -56,7 +53,7 @@
         <div id="dynamic">
           <div id="result">
             <span>Result:</span>
-            <template is="dom-repeat-n" count$="{{count}}" start$="{{start}}" order="{{order}}">
+            <template is="dom-repeat-n" count$="{{count}}" start$="{{start}}" increment$="{{increment}}">
               <div>I am div {{index}}</div>
             </template>            
           </div>
@@ -64,12 +61,7 @@
             <span>Change values:</span>
             <paper-input label="count" type="number" value="{{count}}"></paper-input>
             <paper-input label="start" type="number" value="{{start}}"></paper-input>
-            <paper-dropdown-menu label="Ordering" value="{{order}}">
-              <paper-menu class="dropdown-content">
-                <paper-item>ascending</paper-item>
-                <paper-item>descending</paper-item>
-              </paper-menu>
-            </paper-dropdown-menu>
+            <paper-input label="increment" type="number" value="{{increment}}"></paper-input>
           <div>
         </div>
       </div>
