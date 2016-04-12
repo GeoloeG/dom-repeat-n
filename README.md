@@ -1,6 +1,6 @@
-[![Bower version](https://badge.fury.io/bo/dom-repeat-n.svg)](https://badge.fury.io/bo/iron-swipeable-pages)
-[![Build Status](https://travis-ci.org/MeTaNoV/dom-repeat-n.svg?branch=master)](https://travis-ci.org/MeTaNoV/iron-swipeable-pages)
-[![Dependency Status](https://gemnasium.com/MeTaNoV/dom-repeat-n.svg)](https://gemnasium.com/MeTaNoV/iron-swipeable-pages)
+[![Bower version](https://badge.fury.io/bo/dom-repeat-n.svg)](https://badge.fury.io/bo/dom-repeat-n)
+[![Build Status](https://travis-ci.org/MeTaNoV/dom-repeat-n.svg?branch=master)](https://travis-ci.org/MeTaNoV/dom-repeat-n)
+[![Dependency Status](https://gemnasium.com/MeTaNoV/dom-repeat-n.svg)](https://gemnasium.com/MeTaNoV/dom-repeat-n)
 
 A template element that repeat `n` times its content.
 
