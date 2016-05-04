@@ -105,6 +105,9 @@ Example:
     // Element Behavior
 
     _countChanged: function(newCount, oldCount) {
+      if(parseInt(newCount)) {
+        newCount = parseInt(newCount);
+      }
       if (typeof(newCount) !== "number") {
         this.count = oldCount;
         console.error("dom-repeat-n: count should be a number");
