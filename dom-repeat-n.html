@@ -157,7 +157,7 @@ Example:
     },
 
     _render: function() {
-      for (var i=0; i<this.count; i++) {
+      for (var i=0, k=this._instances.length; i<k; i++) {
         var inst = this._instances[i];
         inst.__setProperty(this.indexAs, i*this.increment+this.start, true);
       }
