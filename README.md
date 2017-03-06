@@ -20,7 +20,6 @@ $ bower install dom-repeat-n --save
 ```
 <custom-element-demo>
   <template>
-    <script src="../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="dom-repeat-n.html">
 	  <next-code-block></next-code-block>
   </template>
