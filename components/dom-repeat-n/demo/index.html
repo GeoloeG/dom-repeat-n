@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <title>dom-repeat-n Demo</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../paper-input/paper-input.html">
+
+    <link rel="import" href="../dom-repeat-n.html">
+
+    <style is="custom-style" include="demo-pages-shared-styles">
+      .vertical-section-container {
+        min-width: 480px;
+      }
+      #dynamic {
+        @apply(--layout-horizontal);
+      }
+      #result {
+        @apply(--layout-flex);
+      }
+    </style>
+  </head>
+  <body unresolved>
+    <template id="t" is="dom-bind">
+      <div class="vertical-section-container centered">
+        <h2>Dom-repeat (default)</h2>
+        <template is="dom-repeat-n" count="3">
+          <div>I am div {{index}}</div>
+        </template>
+
+        <h2>Dom-repeat (start=3)</h2>
+        <template is="dom-repeat-n" count="3" start="3">
+          <div>I am div {{index}}</div>
+        </template>
+
+        <h2>Dom-repeat (increment=3)</h2>
+        <template is="dom-repeat-n" count="3" increment="3">
+          <div>I am div {{index}}</div>
+        </template>
+
+        <h2>Dom-repeat (index-as="my_index")</h2>
+        <template is="dom-repeat-n" count="3" index-as="my_index">
+          <div>I am div {{my_index}}</div>
+        </template>
+
+        <h2>Dom-repeat (dynamic)</h2>
+        <div id="dynamic">
+          <div id="result">
+            <span>Result:</span>
+            <template is="dom-repeat-n" count$="{{count}}" start$="{{start}}" increment$="{{increment}}">
+              <div>I am div {{index}}</div>
+            </template>            
+          </div>
+          <div id="controls">
+            <span>Change values:</span>
+            <paper-input label="count" type="number" value="{{count}}"></paper-input>
+            <paper-input label="start" type="number" value="{{start}}"></paper-input>
+            <paper-input label="increment" type="number" value="{{increment}}"></paper-input>
+          <div>
+        </div>
+      </div>
+    </template>
+  </body>
+</html>
