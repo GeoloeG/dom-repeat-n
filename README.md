@@ -1,8 +1,8 @@
 [![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg?style=flat-square)](https://www.webcomponents.org/element/GeoloeG/dom-repeat-n)
 
-# dom-repeat-n
+# `<dom-repeat-n>`
 
-### Descripton
+## Descripton
 
 A template element that repeat `n` times its content.
 
@@ -15,6 +15,14 @@ $ bower install dom-repeat-n --save
 ```
 
 ## Usage
+
+Import Custom Element:
+
+```html
+<link rel="import" href="bower_components/dom-repeat-n/dom-repeat-n.html">
+```
+
+And then use it:
 
 <!---
 ```
@@ -32,11 +40,11 @@ $ bower install dom-repeat-n --save
 </template>
 ```
 
-See the [Documentation](https://metanov.github.io/dom-repeat-n/) for more options.
+See the [Documentation](https://geoloeg.github.io/dom-repeat-n/) for more options.
 
 ## More Demos
 
-[https://metanov.github.io/dom-repeat-n/](https://metanov.github.io/dom-repeat-n/components/dom-repeat-n/demo/)
+[https://geoloeg.github.io/dom-repeat-n/](https://geoloeg.github.io/dom-repeat-n/components/dom-repeat-n/demo/)
 
 ## Discussing
 
@@ -49,7 +57,3 @@ If you have any questions, you can find me on the [Polymer Slack Channel](https:
 3. Commit your changes: `git commit -m 'Add some feature'`
 4. Push to the branch: `git push origin my-new-feature`
 5. Submit a pull request :D
-
-## License
-
-[MIT License](http://opensource.org/licenses/MIT) © Pascal Gula
