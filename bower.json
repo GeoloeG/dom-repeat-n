@@ -1,6 +1,6 @@
 {
   "name": "dom-repeat-n",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "authors": [
     "Pascal Gula aka MeTaNoV <pascal.gula@gmail.com>"
   ],
@@ -23,10 +23,10 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git://github.com/MeTaNoV/dom-repeat-n.git"
+    "url": "git://github.com/GeoloeG/dom-repeat-n.git"
   },
   "license": "MIT",
-  "homepage": "https://github.com/MeTaNoV/dom-repeat-n/",
+  "homepage": "https://github.com/GeoloeG/dom-repeat-n/",
   "ignore": [
     "/.*",
     "/test/",
