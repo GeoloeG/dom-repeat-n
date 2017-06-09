@@ -1,69 +1,85 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/mixins/mutable-data.html">
 
-<!--
-A template element that repeat `n` times its content.
 
-Example:
-
-    <template is="dom-repeat-n" count="3">
-      <div>I am div {{index}}</div>
-    </template>
-
-@demo demo/index.html
-@hero hero.svg
--->
 <script>
-  Polymer({
-    is: 'dom-repeat-n',
-    extends: 'template',
+(function() {
+  'use strict';
+
+  /**
+   * @constructor
+   * @implements {Polymer_OptionalMutableData}
+   * @extends {Polymer.Element}
+   */
+  const domRepeatBase = Polymer.OptionalMutableData(Polymer.Element);
+
+  /**
+   * A template element that repeat `n` times its content.
+   * 
+   * Example:
+   * 
+   *     <template is="dom-repeat-n" count="3">
+   *       <div>I am div {{index}}</div>
+   *     </template>
+   * 
+   * @demo demo/index.html
+   * @polymerElement
+   * @memberof Polymer
+   * @extends Polymer.Element
+   * @mixes Polymer.MutableData
+   * @summary Custom element for stamping instance of a template bound to items in an array.
+   */
+
+  class DomRepeatN extends domRepeatBase {
+    static get is() { return 'dom-repeat-n'; }
     // The following specifies that the element stamp directly no content,
     // i.e. does not have a <template> section declared
-    _template: null,
+    static get template() { return null; }
 
-    /**
-     * Fired whenever DOM is added or removed by this template (by
-     * default, rendering occurs lazily).
-     *
-     * @event dom-change
-     */
-
-    properties: {
+    static get properties() {
       /**
-       * `count` specifies the number of times to repeat the template content.
-       */
-      count: {
-        type: Number,
-        value: 0,
-        observer: '_countChanged'
-      },
+      * Fired whenever DOM is added or removed by this template (by
+      * default, rendering occurs lazily).
+      *
+      * @event dom-change
+      */
 
-      /**
-       * `start` specifies the value of the first index and default to 0.
-       */
-      start: {
-        type: Number,
-        value: 0,
-        observer: '_startChanged'
-      },
+      return {
+        /**
+        * `count` specifies the number of times to repeat the template content.
+        */
+        count: {
+          type: Number,
+          value: 0,
+          observer: '_countChanged'
+        },
 
-      /**
-       * `increment` specifies the increment value between indices.
-       */
-      increment: {
-        type: Number,
-        value: 1,
-        observer: '_incrementChanged'
-      },
+        /**
+        * `start` specifies the value of the first index and default to 0.
+        */
+        start: {
+          type: Number,
+          value: 0,
+          observer: '_startChanged'
+        },
 
-      /**
-       * The name of the variable to add to the binding scope with the index
-       * for the templates instances.
-       */
-      indexAs: {
-        type: String,
-        value: 'index'
-      },
+        /**
+        * `increment` specifies the increment value between indices.
+        */
+        increment: {
+          type: Number,
+          value: 1,
+          observer: '_incrementChanged'
+        },
 
+        /**
+        * The name of the variable to add to the binding scope with the index
+        * for the templates instances.
+        */
+        indexAs: {
+          type: String,
+          value: 'index'
+        },
     },
 
     behaviors: [

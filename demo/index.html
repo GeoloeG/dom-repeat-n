@@ -14,17 +14,19 @@
 
     <link rel="import" href="../dom-repeat-n.html">
 
-    <style is="custom-style" include="demo-pages-shared-styles">
-      .vertical-section-container {
-        min-width: 480px;
-      }
-      #dynamic {
-        @apply(--layout-horizontal);
-      }
-      #result {
-        @apply(--layout-flex);
-      }
-    </style>
+    <custom-style>
+      <style is="custom-style" include="demo-pages-shared-styles">
+        .vertical-section-container {
+          min-width: 480px;
+        }
+        #dynamic {
+          @apply --layout-horizontal;
+        }
+        #result {
+          @apply --layout-flex;
+        }
+      </style>
+    </custom-style>
   </head>
   <body unresolved>
     <template id="t" is="dom-bind">
