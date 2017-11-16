@@ -116,9 +116,34 @@
                     }
                 }
                 
-                // TODO PG: __ensureTemplatized()
-
                 // Element Behavior
+
+                __ensureTemplatized() {
+                    // Templatizing (generating the instance constructor) needs to wait
+                    // until ready, since won't have its template content handed back to
+                    // it until then
+                    if (!this.__ctor) {
+                        let template = this.template = this.querySelector('template');
+                        if (!template) {
+                            // Wait until childList changes and template should be there by then
+                            let observer = new MutationObserver(() => {
+                                if (this.querySelector('template')) {
+                                    observer.disconnect();
+                                    this.__render();
+                                } else {
+                                    throw new Error('dom-repeat requires a <template> child');
+                                }
+                            });
+                            observer.observe(this, {childList: true});
+                            return false;
+                        }
+                        this.__ctor = Polymer.Templatize.templatize(template, this, {
+                            mutableData: this.mutableData,
+                            parentModel: true,
+                        });
+                    }
+                    return true
+                }
                 
                 _countChanged(newCount, oldCount) {
                     if(parseInt(newCount)) {
@@ -152,62 +177,62 @@
                         this._debounceTemplate(this._render);
                         this.fire('dom-change');
                     });
-                },
+                }
                 
-                _startChanged: function(newStart, oldStart) {
+                _startChanged(newStart, oldStart) {
                     if (typeof(newStart) !== "number") {
                         this.start = oldStart;
                         console.error("dom-repeat-n: start should be a number");
                         return;
                     }
                     this._debounceTemplate(this._render);
-                },
+                }
                 
-                _incrementChanged: function(newIncrement, oldIncrement) {
+                _incrementChanged(newIncrement, oldIncrement) {
                     if (typeof(newIncrement) !== "number") {
                         this.increment = oldIncrement;
                         console.error("dom-repeat-n: start should be a number");
                         return;
                     }
                     this._debounceTemplate(this._render);
-                },
+                }
                 
-                _render: function() {
+                _render() {
                     for (var i=0, k=this.__instances.length; i<k; i++) {
                         var inst = this.__instances[i];
                         inst.__setProperty(this.indexAs, i*this.increment+this.start, true);
                     }
-                },
+                }
                 
-                _attachInstance: function(idx, parent) {
+                _attachInstance(idx, parent) {
                     var inst = this.__instances[idx];
                     parent.insertBefore(inst.root, this);
-                },
+                }
                 
-                _detachInstance: function(idx) {
+                _detachInstance(idx) {
                     var inst = this.__instances[idx];
                     for (var i=0; i<inst._children.length; i++) {
                         var el = inst._children[i];
                         Polymer.dom(inst.root).appendChild(el);
                     }
                     return inst;
-                },
+                }
                 
-                _detachAndRemoveInstance: function(idx) {
+                _detachAndRemoveInstance(idx) {
                     var inst = this._detachInstance(idx);
                     if (inst) {
                         this._pool.push(inst);
                     }
                     this.__instances.splice(idx, 1);
-                },
+                }
                 
-                _stampInstance: function(idx) {
+                _stampInstance(idx) {
                     var model = {};
                     model[this.indexAs] = idx;
                     return this.stamp(model);
-                },
+                }
                 
-                _insertInstance: function(idx) {
+                _insertInstance(idx) {
                     var inst = this._pool.pop();
                     if (!inst) {
                         inst = this._stampInstance(idx);
@@ -218,31 +243,31 @@
                     Polymer.dom(parentNode).insertBefore(inst.root, beforeNode);
                     this.__instances.push(inst);
                     return inst;
-                },
+                }
                 
                 // Implements extension point from Templatizer mixin
-                _showHideChildren: function(hidden) {
+                _showHideChildren(hidden) {
                     for (var i=0; i<this.__instances.length; i++) {
                         this.__instances[i]._showHideChildren(hidden);
                     }
-                },
+                }
                 
                 // Implements extension point from Templatizer mixin
                 // Called as side-effect of a host property change, responsible for
                 // notifying parent path change on each inst
-                _forwardParentProp: function(prop, value) {
+                _forwardParentProp(prop, value) {
                     var i$ = this.__instances;
                     for (var i=0, inst; (i<i$.length) && (inst=i$[i]); i++) {
                         if (!inst.isPlaceholder) {
                             inst.__setProperty(prop, value, true);
                         }
                     }
-                },
+                }
                 
                 // Implements extension point from Templatizer
                 // Called as side-effect of a host path change, responsible for
                 // notifying parent path change on each inst
-                _forwardParentPath: function(path, value) {
+                _forwardParentPath(path, value) {
                     var i$ = this.__instances;
                     for (var i=0, inst; (i<i$.length) && (inst=i$[i]); i++) {
                         if (!inst.isPlaceholder) {
@@ -250,7 +275,8 @@
                         }
                     }
                 }
+            }
 
-            });
+            customElements.define(DomRepeatN.is, DomRepeatN);
+        })();
 </script>
-                
